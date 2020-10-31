@@ -48,9 +48,11 @@ class AddMovie {
                     stmt.executeUpdate("insert into moviess (directorid, title,releasyear,ratind, plot, movielength)" +
                             " value('" + directorId + "', '" + title + "', '" + releasYear + "', '" + rating + "', '" + plot + "', '" + movieLength + "') ");
                     conn.commit();
+                    conn.setAutoCommit(true);
                 } catch (Exception e) {
                     System.out.println("Ошибка добавления фильма в базу данных");
                     conn.rollback();
+                    conn.setAutoCommit(true);
                 }
                 ResultSet rs1 = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "' ;");
                 while (rs1.next()) {
@@ -104,12 +106,13 @@ class AddMovieActors {
                     try {
                         stmt.executeUpdate("insert into movieactor(MovieId, ActorId) values ('" + MovieId + "', '" + id + "');");
                         conn.commit();
+                        conn.setAutoCommit(true);
                     } catch (Exception exception) {
                         System.out.println("Произошла ошибка операции добавления в таблицу актеров и фильмов");
                         conn.rollback();
+                        conn.setAutoCommit(true);
                     }
                 }
-                conn.setAutoCommit(true);
                 break;
             }
             if (mov.checkActor(connect, actorsLastName)) {
@@ -129,16 +132,17 @@ class AddMovieActors {
                 try {
                     stmt.executeUpdate("insert into actors(FirstName, LastName, Nationality, Birth) values ('" + actorsFirstName + "', '" + actorsLastName + "', '" + actorNationality + "', '" + actorBirth + "');");
                     conn.commit();
+                    conn.setAutoCommit(true);
                 } catch (Exception exception) {
                     System.out.println("Произошла ошибка операции добавления актера в базу");
                     conn.rollback();
+                    conn.setAutoCommit(true);
                 }
                 ResultSet rs = stmt.executeQuery("select ActorId from actors where lastname = '" + actorsLastName + "';");
                 while (rs.next()) {
                     actorId = rs.getInt("ActorId");
                     actorMovieId.add(actorId);
                 }
-                conn.setAutoCommit(true);
             }
 
         } while (true);
@@ -178,9 +182,11 @@ class AddMovieDirector {
                         "'" + director + "', '" + directorNationality + "', '" + directorBirth + "');");
                 connect.commit();
                 returnId = true;
+                connect.setAutoCommit(true);
             } catch (Exception e) {
                 connect.rollback();
                 System.out.println("Ошибка при добавлении данных режисера в базу данных");
+                connect.setAutoCommit(true);
             }
 
         }
@@ -217,9 +223,11 @@ class AddMovieGenre {
                         try {
                             stmt.executeUpdate("insert into moviegenres(MovieId,GenreId) values('" + MovieID + "', '" + genreId + "');");
                             connect.commit();
+                            connect.setAutoCommit(true);
                         } catch (Exception e) {
                             System.out.println("Возикла ошибка при добавлени жанров в таблицу фильмов и жанров");
                             connect.rollback();
+                            connect.setAutoCommit(true);
                         }
                     }
                 }
@@ -234,9 +242,11 @@ class AddMovieGenre {
                 try {
                     stmt.executeUpdate("insert into genres(genreName) values('" + movieGenre + "');");
                     connect.commit();
+                    connect.setAutoCommit(true);
                 } catch (Exception e) {
                     System.out.println("Возникла ошибка при бовавлении жанра в таблицу жанров");
                     connect.rollback();
+                    connect.setAutoCommit(true);
                 }
 
                 ResultSet rs1 = stmt.executeQuery("select genreId from genres where genreName = '" + movieGenre + "' ;");
@@ -385,3 +395,347 @@ class FindMovieByTitle {
         mov.printMoviesInformation(rs);
     }
 }
+
+class RemoveMovieFromDatabase {
+    public void doIt(Connection connection) throws SQLException {
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connect, title)) {
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("delete from moviess where movieId = '" + movieId + "';");
+                System.out.println("Фильм успешно удален из базы данных");
+                stmt.executeUpdate("delete from moviegenres where MovieId = '" + movieId + "';");
+                stmt.executeUpdate("delete from movieactor where MovieId = '" + movieId + "';");
+                connect.commit();
+                connect.setAutoCommit(true);
+
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка во время удаления фильма из базы данных");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+
+        } else {
+            System.out.println("Такого фильма в базе данных нет !!!");
+        }
+    }
+}
+
+class EditMovieTitle {
+    public void doIt(Connection connection) throws SQLException {
+        String newTitle;
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            System.out.println("Введите новое название фильма");
+            newTitle = scanner.nextLine();
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("update moviess set title = '" + newTitle + "' where MovieId = '" + movieId + "';");
+                System.out.println("Название фильма успешно обновленно !");
+                connect.commit();
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка при обновлении названия фильма в базе");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+
+    }
+}
+
+
+class EditMovieRating {
+    public void doIt(Connection connection) throws SQLException {
+        String newRating;
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            System.out.println("Введите новое значение рейтинга");
+            newRating = scanner.nextLine();
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("update moviess set ratind = '" + newRating + "' where MovieId = '" + movieId + "';");
+                System.out.println("Рейтинг фильма успешно обновленно !");
+                connect.commit();
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка при обновлении рейтинга фильма в базе");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+
+    }
+}
+
+
+class EditMoviePremiereYear {
+    public void doIt(Connection connection) throws SQLException {
+        String newPremiereYear;
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            System.out.println("Введите новую дата премьеры");
+            newPremiereYear = scanner.nextLine();
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("update moviess set releasYear = '" + newPremiereYear + "' where MovieId = '" + movieId + "';");
+                System.out.println("Дата премьеры успешно измененна !!!");
+                connect.commit();
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка при обновлении даты премьеры");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+
+    }
+}
+
+
+class EditMovieLength {
+    public void doIt(Connection connection) throws SQLException {
+        String newMovieLength;
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            System.out.println("Введите новую длительность фильма");
+            newMovieLength = scanner.nextLine();
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("update moviess set movieLength = '" + newMovieLength + "' where MovieId = '" + movieId + "';");
+                System.out.println("Длительность фильма успешно измененна !!!");
+                connect.commit();
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка при обновлении длительности фильма");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+
+    }
+}
+
+class EditMoviePlot {
+    public void doIt(Connection connection) throws SQLException {
+        String newMoviePlot;
+        int movieId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            System.out.println("Введите новый сюжет фильма");
+            newMoviePlot = scanner.nextLine();
+            ResultSet rs = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs.next()) {
+                movieId = rs.getInt("MovieId");
+            }
+            try {
+                connect.setAutoCommit(false);
+                stmt.executeUpdate("update moviess set plot = '" + newMoviePlot + "' where MovieId = '" + movieId + "';");
+                System.out.println("Сюжет фильма успешно изменнен !!!");
+                connect.commit();
+                connect.setAutoCommit(true);
+            } catch (Exception e) {
+                System.out.println("Произошла ошибка при обновлении сюжета фильма");
+                connect.rollback();
+                connect.setAutoCommit(true);
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+
+    }
+}
+
+class EditMovieActor {
+    public void doIt(Connection connection) throws SQLException {
+        String movieActor;
+        int movieId = 0;
+        int actorId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            ResultSet rs1 = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs1.next()) {
+                movieId = rs1.getInt("MovieId");
+            }
+
+            do {
+                ResultSet rs = stmt.executeQuery("select FirstName, LastName from actors\n" +
+                        "join movieactor using(ActorId)\n" +
+                        "join moviess using(MovieId)\n" +
+                        "where MovieId = '" + movieId + "';");
+                System.out.println("Актеры снимавшиеся в этом фильме фильма");
+                while (rs.next()) {
+                    System.out.println(rs.getString("FirstName") + " " + rs.getString("LastName"));
+                }
+
+                System.out.println("Введите фамилию актера которого вы хотите удалить из списка актеров");
+                System.out.println("Exit - выход");
+                movieActor = scanner.nextLine();
+                if ("Exit".equals(movieActor)) {
+                    break;
+                }
+                if (mov.checkActor(connection, movieActor)) {
+                    ResultSet rs2 = stmt.executeQuery("select ActorId from actors where LastName = '" + movieActor + "';");
+                    while (rs2.next()) {
+                        actorId = rs2.getInt("ActorId");
+                    }
+                }
+                try {
+                    connect.setAutoCommit(false);
+                    stmt.executeUpdate("delete from movieactor where ActorId='" + actorId + "';");
+                    System.out.println("Актер успешно удален !!!");
+                    connect.commit();
+                    connect.setAutoCommit(true);
+                    System.out.println("Хотите добавить актера к фильму ?");
+                    System.out.println(" 1 - добавить");
+                    System.out.println("Нажмите любую клавишу если не хотите добавлять актера");
+                    String action = scanner.nextLine();
+                    if ("1".equals(action)) {
+                        AddMovieActors addMovieActors = new AddMovieActors();
+                        addMovieActors.doIt(connection, movieId);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Произошла ошибка при удалении актера");
+                    connect.rollback();
+                    connect.setAutoCommit(true);
+                }
+
+            } while (true);
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+    }
+}
+
+class EditMovieDirector {
+    public void doIt(Connection connection) throws SQLException {
+        String newMovieDirector;
+        int movieId = 0;
+        int newDirectorId = 0;
+        Connection connect = connection;
+        Statement stmt = connect.createStatement();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введите название фильма");
+        String title = scanner.nextLine();
+        Movies mov = new Movies();
+        if (mov.checkMovies(connection, title)) {
+            ResultSet rs1 = stmt.executeQuery("select MovieId from moviess where Title = '" + title + "';");
+            while (rs1.next()) {
+                movieId = rs1.getInt("MovieId");
+            }
+
+            ResultSet rs = stmt.executeQuery("select FirstName, LastName from directors\n" +
+                    "join moviess using(DirectorId) where title = '" + title + "';");
+            System.out.println("Режисер этого фильма");
+            while (rs.next()) {
+                System.out.println(rs.getString("FirstName") + " " + rs.getString("LastName"));
+            }
+
+            System.out.println("Введите фамилию нового режисера");
+            newMovieDirector = scanner.nextLine();
+            if (mov.checkDirector(connection, newMovieDirector)) {
+                ResultSet rs2 = stmt.executeQuery("select DirectorId from directors where LastName = '" + newMovieDirector + "';");
+                while (rs2.next()) {
+                    newDirectorId = rs2.getInt("DirectorId");
+                    try {
+                        connect.setAutoCommit(false);
+                        stmt.executeUpdate("update moviess set DirectorId = '" + newDirectorId + "' where MovieId = '" + movieId + "';");
+                        System.out.println("Даные режисера успешно измененны !");
+                        connect.commit();
+                    } catch (Exception e) {
+                        connect.rollback();
+                        System.out.println("Произошла ошибка обновления режисера");
+                    }
+                }
+            } else {
+                System.out.println("Такого режисера в базе нет, его необходимо зарегистрировать");
+                AddMovieDirector addMovieDirector = new AddMovieDirector();
+                newDirectorId = addMovieDirector.doIt(connection);
+                ResultSet rs2 = stmt.executeQuery("select DirectorId from directors where LastName = '" + newMovieDirector + "';");
+                while (rs2.next()) {
+                    newDirectorId = rs2.getInt("DirectorId");
+                    try {
+                        connect.setAutoCommit(false);
+                        stmt.executeUpdate("update moviess set DirectorId = '" + newDirectorId + "' where MovieId = '" + movieId + "';");
+                        System.out.println("Даные режисера успешно измененны !");
+                        connect.commit();
+                    } catch (Exception e) {
+                        connect.rollback();
+                        System.out.println("Произошла ошибка обновления режисера");
+                    }
+                }
+            }
+        } else {
+            System.out.println("Такого фильма в базе нет !!!");
+        }
+    }
+}
+

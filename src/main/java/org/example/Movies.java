@@ -16,8 +16,6 @@ public class Movies {
              Statement stmt = connect.createStatement()) {
             connect.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             System.out.println("Добро пожаловать в программу по работе с базой данных фильмов !!!");
-
-
             Menu menu = new Menu("Главное меню");
 
 
@@ -25,22 +23,71 @@ public class Movies {
                 Menu menu1_1 = new Menu("Главное меню пункта 1");
 
                 AddMovie addMovie = new AddMovie();
-
                 Menu menu1p1 = new Menu("Добавить фильм в базу данных", context1 -> {
                     addMovie.doIt(connect);
                 });
-                Menu menu1p2 = new Menu("Удалить фильм из базы данных");
-                Menu menu1p3 = new Menu("Редактировать информацию о фильме");
 
 
-                menu1_1.addSubMenu(menu1p1);
-                menu1_1.addSubMenu(menu1p2);
-                menu1_1.addSubMenu(menu1p3);
-                menu1_1.print();
-                menu1_1.action();
+                Menu menu1p2 = new Menu("Удалить фильм из базы данных", context1 -> {
+                    RemoveMovieFromDatabase removeMovieFromDatabase = new RemoveMovieFromDatabase();
+                    removeMovieFromDatabase.doIt(connect);
+                });
+
+                Menu menu1p3 = new Menu("Редактировать информацию о фильме", context1 -> {
+                    Menu menu2 = new Menu("Главное меню пункта 3");
+
+                    Menu menu2p1 = new Menu("Редактировать название фильма", context2 -> {
+                        EditMovieTitle editMovieTitle = new EditMovieTitle();
+                        editMovieTitle.doIt(connect);
+                    });
+                    Menu menu2p2 = new Menu("Редактировать рейтинг фильма", context2 -> {
+                        EditMovieRating editMovieRating = new EditMovieRating();
+                        editMovieRating.doIt(connect);
+                    });
+                    Menu menu2p3 = new Menu("Редактировать год премьеры", context2 -> {
+                        EditMoviePremiereYear editMoviePremiereYear = new EditMoviePremiereYear();
+                        editMoviePremiereYear.doIt(connect);
+                    });
+                    Menu menu2p4 = new Menu("Редактировать информацию о актерах фильмах", context2 -> {
+                        EditMovieActor editMovieActor = new EditMovieActor();
+                        editMovieActor.doIt(connect);
+                    });
+
+                    Menu menu2p5 = new Menu("Редактировать информацию о режисере фильма", context2 -> {
+                        EditMovieDirector editMovieDirector = new EditMovieDirector();
+                        editMovieDirector.doIt(connect);
+                    });
+
+                    Menu menu2p6 = new Menu("Редактировать длительность фильма", context2 -> {
+                        EditMovieLength editMovieLength = new EditMovieLength();
+                        editMovieLength.doIt(connect);
+                    });
+                    Menu menu2p7 = new Menu("Редактировать сюжет", context2 -> {
+                        EditMoviePlot editMoviePlot = new EditMoviePlot();
+                        editMoviePlot.doIt(connect);
+                    });
+                    do {
+                        menu2.addSubMenu(menu2p1);
+                        menu2.addSubMenu(menu2p2);
+                        menu2.addSubMenu(menu2p3);
+                        menu2.addSubMenu(menu2p4);
+                        menu2.addSubMenu(menu2p5);
+                        menu2.addSubMenu(menu2p6);
+                        menu2.addSubMenu(menu2p7);
+                        menu2.print();
+                    } while (!menu2.action());
+                });
+
+                do {
+                    menu1_1.addSubMenu(menu1p1);
+                    menu1_1.addSubMenu(menu1p2);
+                    menu1_1.addSubMenu(menu1p3);
+                    menu1_1.print();
+                } while (!menu1_1.action());
+
 
             });
-            menu.addSubMenu(menu1);
+
 
             Menu menu2 = new Menu("Поиск данных в базе данных", context -> {
                 Menu menu_2 = new Menu("Главное меню пункта 2");
@@ -81,23 +128,25 @@ public class Movies {
                     }
                 });
 
-
-                menu_2.addSubMenu(menu2p1);
-                menu_2.addSubMenu(menu2p2);
-                menu_2.addSubMenu(menu2p3);
-                menu_2.addSubMenu(menu2p4);
-                menu_2.addSubMenu(menu2p5);
-                menu_2.addSubMenu(menu2p6);
-                menu_2.print();
-                menu_2.action();
-
-
+                do {
+                    menu_2.addSubMenu(menu2p1);
+                    menu_2.addSubMenu(menu2p2);
+                    menu_2.addSubMenu(menu2p3);
+                    menu_2.addSubMenu(menu2p4);
+                    menu_2.addSubMenu(menu2p5);
+                    menu_2.addSubMenu(menu2p6);
+                    menu_2.print();
+                } while (!menu_2.action());
             });
 
-            menu.addSubMenu(menu2);
-            menu.print();
-            menu.action();
+            do {
+                menu.addSubMenu(menu1);
+                menu.addSubMenu(menu2);
+                menu.print();
+            } while (!menu.action());
+
         } catch (SQLException | IOException throwables) {
+
         }
     }
 
