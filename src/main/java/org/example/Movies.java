@@ -3,7 +3,6 @@ package org.example;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.Scanner;
 
 public class Movies {
     public static final String URL = "jdbc:mysql://localhost/Movies";
@@ -11,7 +10,6 @@ public class Movies {
     public static final String PASSWORD = "";
 
     public void createDataBaseMovies() {
-        Scanner scanner = new Scanner(System.in);
         try (Connection connect = DriverManager.getConnection(URL, USER, PASSWORD);
              Statement stmt = connect.createStatement()) {
             connect.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
@@ -66,7 +64,7 @@ public class Movies {
                         EditMoviePlot editMoviePlot = new EditMoviePlot();
                         editMoviePlot.doIt(connect);
                     });
-                    do {
+
                         menu2.addSubMenu(menu2p1);
                         menu2.addSubMenu(menu2p2);
                         menu2.addSubMenu(menu2p3);
@@ -74,14 +72,16 @@ public class Movies {
                         menu2.addSubMenu(menu2p5);
                         menu2.addSubMenu(menu2p6);
                         menu2.addSubMenu(menu2p7);
+                    do {
                         menu2.print();
                     } while (!menu2.action());
                 });
 
-                do {
+
                     menu1_1.addSubMenu(menu1p1);
                     menu1_1.addSubMenu(menu1p2);
                     menu1_1.addSubMenu(menu1p3);
+                do {
                     menu1_1.print();
                 } while (!menu1_1.action());
 
@@ -128,20 +128,22 @@ public class Movies {
                     }
                 });
 
-                do {
+
                     menu_2.addSubMenu(menu2p1);
                     menu_2.addSubMenu(menu2p2);
                     menu_2.addSubMenu(menu2p3);
                     menu_2.addSubMenu(menu2p4);
                     menu_2.addSubMenu(menu2p5);
                     menu_2.addSubMenu(menu2p6);
+                do {
                     menu_2.print();
                 } while (!menu_2.action());
             });
 
-            do {
+
                 menu.addSubMenu(menu1);
                 menu.addSubMenu(menu2);
+            do {
                 menu.print();
             } while (!menu.action());
 
